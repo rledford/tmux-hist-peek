@@ -1,10 +1,10 @@
 # tmux-hist-peek
 
-A tmux plugin that maintains a per-pane file history fed by any tool or script, and lets you quickly reopen those files in an editor via a popup overlay.
+A tmux plugin that maintains a per-pane file history fed by any tool or script, and lets you quickly pass those files to any command via a popup overlay.
 
 ## How it works
 
-`tmux-hist-peek` exposes a `scripts/record.sh` script that anything can call to push file paths into the history. It reads a JSON payload from stdin, extracts the path(s), and prepends them to the pane's history file. When you trigger the popup, a navigable list appears and selecting a file opens it in your configured editor.
+`tmux-hist-peek` exposes a `scripts/record.sh` script that anything can call to push file paths into the history. It reads a JSON payload from stdin, extracts the path(s), and prepends them to the pane's history file. When you trigger the popup, a navigable list appears and selecting a file passes it to your configured command.
 
 What ends up in the history is entirely up to what you hook in — recently read files, newly created files, files modified by an agent, or anything else.
 
@@ -88,7 +88,7 @@ Press `prefix + e` (default) to open the file picker popup.
 |-----|--------|
 | `j` / `↓` | Move down |
 | `k` / `↑` | Move up |
-| `Enter` | Open selected file |
+| `Enter` | Select file |
 | `p` | Pin / unpin selected file |
 | `r` | Reset history (prompts `y/N`) |
 | `q` / `Esc` | Close |

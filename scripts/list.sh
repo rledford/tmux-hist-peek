@@ -123,7 +123,7 @@ draw() {
         printf '   %s\n' "${display_files[$i]}"
       fi
     done
-    printf '\n \033[2m[j/↓] down  [k/↑] up  [Enter] open  [p] pin  [r] reset  [q] quit\033[0m\n'
+    printf '\n \033[2m[j/↓] down  [k/↑] up  [Enter] select  [p] pin  [r] reset  [q] quit\033[0m\n'
   else
     draw_line "$prev_selected"
     draw_line "$selected"
