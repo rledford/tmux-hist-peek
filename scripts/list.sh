@@ -16,9 +16,43 @@ if [ ! -f "$hist_file" ] || [ ! -s "$hist_file" ]; then
 fi
 
 mapfile -t raw_files < "$hist_file"
+
+valid_paths() {
+  local f
+  for f in "$@"; do
+    case "$f" in
+      /*) ;;
+      *) return 1 ;;
+    esac
+  done
+  return 0
+}
+
+if ! valid_paths "${raw_files[@]}"; then
+  tput civis 2>/dev/null
+  trap 'tput cnorm 2>/dev/null' EXIT
+  printf ' hist-peek could not read the history for this pane\n'
+  printf ' press r to reset or any other key to cancel\n'
+  while true; do
+    IFS= read -r -s -n1 key < /dev/tty
+    case "$key" in
+      r) rm -f "$hist_file" ;;
+    esac
+    break
+  done
+  exit 0
+fi
+
 pinned_files=()
-[ -f "$pinned_record" ] && mapfile -t pinned_files < "$pinned_record"
-max_pins="$(get_tmux_option "$CLAUDE_PEEK_MAX_PINS_OPTION" "$CLAUDE_PEEK_MAX_PINS_DEFAULT")"
+if [ -f "$pinned_record" ]; then
+  mapfile -t pinned_files < "$pinned_record"
+  if ! valid_paths "${pinned_files[@]}"; then
+    rm -f "$pinned_record"
+    pinned_files=()
+  fi
+fi
+
+max_pins="$(get_tmux_option "$HIST_PEEK_MAX_PINS_OPTION" "$HIST_PEEK_MAX_PINS_DEFAULT")"
 
 is_pinned() {
   local f="$1"
@@ -89,7 +123,7 @@ draw() {
         printf '   %s\n' "${display_files[$i]}"
       fi
     done
-    printf '\n \033[2m[j/↓] down  [k/↑] up  [Enter] open  [p] pin  [q] quit\033[0m\n'
+    printf '\n \033[2m[j/↓] down  [k/↑] up  [Enter] open  [p] pin  [r] reset  [q] quit\033[0m\n'
   else
     draw_line "$prev_selected"
     draw_line "$selected"
@@ -133,6 +167,19 @@ while true; do
       for i in "${!display_files[@]}"; do
         [ "${display_files[$i]}" = "$cur_file" ] && selected="$i" && break
       done
+      prev_selected=-1
+      draw
+      ;;
+    r)
+      tput cup $((file_count + 2)) 0
+      printf ' \033[2mreset history? [y/N]\033[0m \033[K'
+      tput cnorm 2>/dev/null
+      IFS= read -r -s -n1 confirm < /dev/tty
+      tput civis 2>/dev/null
+      if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+        rm -f "$hist_file"
+        break
+      fi
       prev_selected=-1
       draw
       ;;

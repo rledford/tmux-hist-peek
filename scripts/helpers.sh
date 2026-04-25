@@ -15,10 +15,10 @@ get_tmux_option() {
 
 history_file() {
   safe_id="$(printf '%s' "$1" | tr '%' '_')"
-  echo "${CLAUDE_PEEK_HISTORY_DIR}/${safe_id}"
+  echo "${HIST_PEEK_HISTORY_DIR}/${safe_id}"
 }
 
 pin_file() {
   safe_id="$(printf '%s' "$1" | tr '%' '_')"
-  echo "${CLAUDE_PEEK_HISTORY_DIR}/${safe_id}.pin"
+  echo "${HIST_PEEK_HISTORY_DIR}/${safe_id}.pin"
 }

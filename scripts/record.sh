@@ -10,20 +10,18 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 input="$(cat)"
 
-tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)"
-[ -z "$tool_name" ] && exit 0
-
-if [ "$tool_name" = "MultiEdit" ]; then
-  file_paths="$(printf '%s' "$input" | jq -r '.tool_input.edits[].file_path // empty' 2>/dev/null)"
-else
-  file_paths="$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)"
-fi
+file_paths="$(printf '%s' "$input" | jq -r '
+  if .files then .files[]
+  elif .file then .file
+  else empty
+  end
+' 2>/dev/null)"
 
 [ -z "$file_paths" ] && exit 0
 
-mkdir -p "$CLAUDE_PEEK_HISTORY_DIR"
+mkdir -p "$HIST_PEEK_HISTORY_DIR"
 hist_file="$(history_file "$TMUX_PANE")"
-max_files="$(get_tmux_option "$CLAUDE_PEEK_MAX_FILES_OPTION" "$CLAUDE_PEEK_MAX_FILES_DEFAULT")"
+max_files="$(get_tmux_option "$HIST_PEEK_MAX_FILES_OPTION" "$HIST_PEEK_MAX_FILES_DEFAULT")"
 
 printf '%s\n' "$file_paths" | awk '{a[NR]=$0} END{for(i=NR;i>=1;i--)print a[i]}' | while IFS= read -r file_path; do
   [ -z "$file_path" ] && continue
