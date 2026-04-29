@@ -15,7 +15,10 @@ if [ ! -f "$hist_file" ] || [ ! -s "$hist_file" ]; then
   exit 0
 fi
 
-mapfile -t raw_files < "$hist_file"
+raw_files=()
+while IFS= read -r line; do
+  raw_files+=("$line")
+done < "$hist_file"
 
 valid_paths() {
   local f
@@ -45,7 +48,9 @@ fi
 
 pinned_files=()
 if [ -f "$pinned_record" ]; then
-  mapfile -t pinned_files < "$pinned_record"
+  while IFS= read -r line; do
+    pinned_files+=("$line")
+  done < "$pinned_record"
   if ! valid_paths "${pinned_files[@]}"; then
     rm -f "$pinned_record"
     pinned_files=()
